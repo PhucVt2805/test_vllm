@@ -1,0 +1,25 @@
+services:
+  vllm:
+    image: vllm/vllm-openai
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN}
+      - TRANSFORMERS_CACHE=/root/.cache/huggingface
+    ports:
+      - "8080:8080"
+    command:
+      - --model
+      - Qwen/Qwen2.5-Coder-0.5B-Instruct
+      - --dtype
+      - half
+    volumes:
+      - ~/models:/root/.cache/huggingface
+    ipc: host
+
+  app:
+    build: ./app
+    depends_on:
+      - vllm
+    environment:
+      - VLLM_API_BASE=http://vllm:8000/v1
